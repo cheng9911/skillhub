@@ -86,6 +86,3 @@ pip install git+https://github.com/mlfoundations/open_clip.git
 ---
 
 欢迎基于本项目继续开发和优化，若有问题或建议请提交issue。
-
-```
-```
