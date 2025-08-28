@@ -4,16 +4,16 @@
       "id": "fold_towel",
       "name": "Fold Towel",
       "path": "skills/fold_towel",
-      "num_frames": 300,
+      "num_frames": 972,
       "description": "Fold a gray towel with subtle spots from its unfolded state into a neat rectangular shape."
     },
     {
-      "id": "pick_panda",
-      "name": "Pick Panda",
-      "path": "skills/pick_panda",
-      "num_frames": 360,
-      "description": "Pick up the black and white panda plush toy and place it into the box."
+      "id": "Pick_panda",
+      "name": "Pick panda",
+      "path": "skills/Pick_panda",
+      "num_frames": 916,
+      "description": "Grasp the black-and-white panda toy and place it into the box."
     }
   ],
-  "last_updated": "2025-08-12"
+  "last_updated": "2025-08-28"
 }

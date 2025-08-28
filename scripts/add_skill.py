@@ -43,7 +43,7 @@ def get_next_frame_index(images_dir):
         return 1
     return max(indexes) + 1
 
-def extract_frames_dual_append(flan_video, head_video, images_dir, start_idx, max_seconds=None):
+def extract_frames_dual_append(flan_video, head_video, images_dir, start_idx, max_seconds=None,frame_interval=1,seconds_per_frame=None):
     os.makedirs(images_dir, exist_ok=True)
 
     cap_flan = cv2.VideoCapture(flan_video)
@@ -52,12 +52,14 @@ def extract_frames_dual_append(flan_video, head_video, images_dir, start_idx, ma
     fps_flan = cap_flan.get(cv2.CAP_PROP_FPS)
     fps_head = cap_head.get(cv2.CAP_PROP_FPS)
     fps = min(fps_flan, fps_head) if fps_flan > 0 and fps_head > 0 else 30  # 默认30fps
-
+    if seconds_per_frame is not None:
+        frame_interval = int(fps * seconds_per_frame)
+        print(f"⚙️ 自动换算: {seconds_per_frame} 秒/帧 -> {frame_interval} 帧间隔")
     max_frames = int(fps * max_seconds) if max_seconds is not None else None
 
     frame_idx = start_idx - 1
     saved_frames = []
-
+    raw_idx = -1  # 原始帧序号
     while True:
         if max_frames is not None and (frame_idx - start_idx + 1) >= max_frames:
             break
@@ -69,6 +71,9 @@ def extract_frames_dual_append(flan_video, head_video, images_dir, start_idx, ma
             break
 
         frame_idx += 1
+        raw_idx += 1
+        if raw_idx % frame_interval != 0:
+            continue
 
         flan_path = os.path.join(images_dir, f"{frame_idx:05d}_flan.png")
         head_path = os.path.join(images_dir, f"{frame_idx:05d}_head.png")
@@ -87,7 +92,7 @@ def extract_frames_dual_append(flan_video, head_video, images_dir, start_idx, ma
 
     return saved_frames
 
-def add_skill_append(skill_id, skill_name, skill_desc, flan_video, head_video, max_seconds=None):
+def add_skill_append(skill_id, skill_name, skill_desc, flan_video, head_video, max_seconds=None, frame_interval=1,seconds_per_frame=None):
     skill_path = os.path.join(SKILLS_DIR, skill_id)
     images_dir = os.path.join(skill_path, "images")
     os.makedirs(skill_path, exist_ok=True)
@@ -136,6 +141,8 @@ if __name__ == "__main__":
 
     # 简单参数解析
     max_seconds = None
+    frame_interval = 1
+    seconds_per_frame = None
     args = sys.argv
     if "--max_seconds" in args:
         idx = args.index("--max_seconds")
@@ -146,7 +153,23 @@ if __name__ == "__main__":
         except Exception as e:
             print("参数 --max_seconds 后应跟秒数(float)")
             exit(1)
-
+    # 解析 --frame_interval
+    if "--seconds_per_frame" in args:
+        idx = args.index("--seconds_per_frame")
+        try:
+            seconds_per_frame = float(args[idx + 1])
+            args = args[:idx] + args[idx+2:]
+        except Exception:
+            print("参数 --seconds_per_frame 后应跟秒数(float)")
+            exit(1)
+    if "--frame_interval" in args:
+        idx = args.index("--frame_interval")
+        try:
+            frame_interval = int(args[idx + 1])
+            args = args[:idx] + args[idx+2:]
+        except Exception:
+            print("参数 --frame_interval 后应跟整数")
+            exit(1)
     if len(args) < 6:
         print("用法: python add_skill.py <skill_id> <skill_name> <skill_description> <flan_video> <head_video> [--max_seconds 秒数]")
         exit(1)
@@ -157,4 +180,4 @@ if __name__ == "__main__":
     flan_video = args[4]
     head_video = args[5]
 
-    add_skill_append(skill_id, skill_name, skill_desc, flan_video, head_video, max_seconds)
+    add_skill_append(skill_id, skill_name, skill_desc, flan_video, head_video, max_seconds, frame_interval,seconds_per_frame)
